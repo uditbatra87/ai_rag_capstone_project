@@ -3,6 +3,7 @@ from openai import OpenAI
 from pydantic import BaseModel,Field
 import os
 from dotenv import load_dotenv
+from settings import my_settings
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -16,19 +17,12 @@ class User(BaseModel):
     email : str = Field(default=None)
     phone : str = Field(default=None)
 
-
-# Load the variables
-load_dotenv('.env')
-
-# Access them using os.getenv or os.environ
-OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
-OPEN_AI_URL = os.getenv("OPEN_AI_URL")
-
+print(my_settings.open_ai_key)
 
 client = instructor.from_openai(
     OpenAI(
-        api_key=OPEN_AI_KEY,
-        base_url=OPEN_AI_URL
+        api_key=my_settings.open_ai_key,
+        base_url=my_settings.open_ai_url,
     )
 )
 
