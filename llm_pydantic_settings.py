@@ -26,8 +26,9 @@ client = instructor.from_openai(
     )
 )
 
-input = """Hello, My name is Udit and i am 39 years old. I like reading and sleeping. I work as an IT Engineer. you can reach out to me uditbatra87@test.org
-or call me on 9158650792"""
+input = """Hello, My name is Udit and i am 39 years old. I like reading and eating. 
+I work as an IT Engineer. you can reach out to me uditbatra87@test.org
+or call me on 9158000792"""
 
 
 user:User = client.chat.completions.create(

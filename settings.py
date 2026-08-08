@@ -1,7 +1,7 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings,SettingsConfigDict
 
-class Settings(BaseSettings):
+class AppSettings(BaseSettings):
     open_ai_key : str
     open_ai_url : str
 
@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file = ".env",
         env_file_encoding = "utf-8",
-        extra="allow"
+        extra="forbid"
         )
 
 
-my_settings = Settings()
+my_settings = AppSettings()
