@@ -66,6 +66,7 @@ class JsonLogger(logging.Formatter):
 
 
 
+
 log = logging.getLogger('my-sample-webservice')
 log.setLevel(logging.INFO)
 
@@ -77,6 +78,7 @@ if not log.handlers:  # <-- only add handlers if none exist yet
     streamLogger = logging.StreamHandler()
     streamLogger.setFormatter(JsonLogger())
     log.addHandler(streamLogger)
+
 
 
 @app.get("/first_endpoint")
