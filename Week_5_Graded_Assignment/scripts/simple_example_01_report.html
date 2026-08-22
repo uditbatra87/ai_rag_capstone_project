@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Example 01 — Synchronous, All 4 Strategies</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+             background: #f8f9fa; color: #212529; margin: 0; padding: 32px; max-width: 980px; }
+    h1    { font-size: 1.5rem; margin-bottom: 4px; }
+    h2    { font-size: 1rem; color: #495057; margin: 32px 0 12px;
+             border-bottom: 2px solid #dee2e6; padding-bottom: 5px; }
+    .badge { background:#6c757d; color:#fff; padding:2px 10px; border-radius:12px;
+              font-size:.8em; font-weight:700; }
+    .card  { background:#fff; border-radius:8px; padding:16px 20px;
+              box-shadow:0 1px 4px rgba(0,0,0,.08); margin-bottom:20px; }
+    .snippet-text { background:#f8f9fa; border-left:4px solid #6c757d;
+                     padding:10px 14px; border-radius:0 4px 4px 0;
+                     font-size:.9em; white-space:pre-wrap; }
+    .meta { font-size:.82em; color:#6c757d; margin-bottom:28px; }
+    .tag  { display:inline-block; background:#e9ecef; color:#495057;
+             padding:1px 8px; border-radius:4px; font-size:.78em;
+             font-family:monospace; margin-right:4px; }
+    /* Yellow callout explaining the synchronous / sequential execution model */
+    .callout { background:#fff3cd; border-left:4px solid #ffc107;
+                padding:10px 14px; border-radius:0 6px 6px 0;
+                font-size:.85em; margin-bottom:24px; }
+  </style>
+</head>
+<body>
+  <h1>Simple Example 01 <span class="badge">Synchronous</span></h1>
+  <div class="meta">
+    Scope: <strong>1 snippet × 4 strategies (sequential)</strong>
+    &nbsp;|&nbsp; Model: <strong>gpt-4o-mini</strong>
+    &nbsp;|&nbsp; API style: <strong>synchronous (blocking, one call at a time)</strong>
+  </div>
+
+  <!-- Explains the key concept of this script to someone reading the report -->
+  <div class="callout">
+    <strong>How this script works:</strong> each strategy is called
+    <em>one at a time</em> in a <code>for</code> loop. The program blocks
+    (pauses completely) while waiting for each API response before starting
+    the next. Total time = sum of all 4 call durations.
+    <br><br>
+    Compare to <strong>simple_example_02.py</strong>, which uses <code>AsyncOpenAI</code>
+    and <code>await</code> in the same loop structure — still sequential, but now async.
+    <strong>simple_example_03.py</strong> then introduces <code>asyncio.gather()</code>
+    to make all 4 calls truly concurrent.
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ SECTION 1 -->
+  <h2>1 · Input Data</h2>
+  <div class="card">
+    <p style="margin:0 0 6px;">
+      <span class="tag">j01</span>
+      Job posting text — the same text is passed to all four strategies below:
+    </p>
+    <div class="snippet-text">Acme Corp is hiring a Senior Software Engineer to join our platform team. The ideal candidate has 5+ years of backend development experience and strong skills in Python and distributed systems.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ SECTION 2 -->
+  <h2>2 · Strategy Results (all four, sequential)</h2>
+  
+    <!-- ── Card: zero_shot ── -->
+    <div style="border:1px solid #dee2e6;border-radius:8px;margin-bottom:28px;overflow:hidden;">
+
+      <!-- Header bar: strategy badge + call metadata -->
+      <div style="background:#343a40;padding:10px 16px;display:flex;align-items:center;
+                  gap:14px;flex-wrap:wrap;">
+        <span style="background:#6c757d;color:#fff;padding:2px 10px;border-radius:12px;font-size:.8em;font-weight:700">zero_shot</span>
+        <span style="color:#adb5bd;font-size:.8em;">
+          114 prompt tokens
+          &nbsp;+&nbsp; 34 completion tokens
+          &nbsp;|&nbsp; 2.63s
+        </span>
+      </div>
+
+      <div style="padding:14px 18px;">
+
+        <!-- 2b. Prompt bubbles -->
+        <p style="margin:0 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Prompt sent to model</p>
+        <div style="background:#cfe2ff;border-radius:6px;padding:8px 12px;margin-bottom:6px;"><span style="font-size:.7em;font-weight:700;color:#084298;text-transform:uppercase;letter-spacing:.06em">USER</span><pre style="margin:4px 0 0;white-space:pre-wrap;font-size:.82em;font-family:Menlo,Consolas,monospace;color:#212529">Extract the following three fields from this job posting and return them as a JSON object with exactly these keys:
+  &quot;company&quot;                   — name of the hiring company (string)
+  &quot;role&quot;                       — exact job title (string)
+  &quot;years_experience_required&quot;  — minimum years required (integer, or null if not stated)
+
+Job posting:
+Acme Corp is hiring a Senior Software Engineer to join our platform team. The ideal candidate has 5+ years of backend development experience and strong skills in Python and distributed systems.</pre></div>
+
+        <!-- 2c. Raw response -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Raw model response</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">```json
+{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}
+```</pre>
+        </div>
+
+        <!-- 2d. Parsed result -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Parsed result</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}</pre>
+        </div>
+
+      </div>
+    </div>
+    <!-- ── Card: few_shot ── -->
+    <div style="border:1px solid #dee2e6;border-radius:8px;margin-bottom:28px;overflow:hidden;">
+
+      <!-- Header bar: strategy badge + call metadata -->
+      <div style="background:#343a40;padding:10px 16px;display:flex;align-items:center;
+                  gap:14px;flex-wrap:wrap;">
+        <span style="background:#0d6efd;color:#fff;padding:2px 10px;border-radius:12px;font-size:.8em;font-weight:700">few_shot</span>
+        <span style="color:#adb5bd;font-size:.8em;">
+          262 prompt tokens
+          &nbsp;+&nbsp; 25 completion tokens
+          &nbsp;|&nbsp; 1.22s
+        </span>
+      </div>
+
+      <div style="padding:14px 18px;">
+
+        <!-- 2b. Prompt bubbles -->
+        <p style="margin:0 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Prompt sent to model</p>
+        <div style="background:#cfe2ff;border-radius:6px;padding:8px 12px;margin-bottom:6px;"><span style="font-size:.7em;font-weight:700;color:#084298;text-transform:uppercase;letter-spacing:.06em">USER</span><pre style="margin:4px 0 0;white-space:pre-wrap;font-size:.82em;font-family:Menlo,Consolas,monospace;color:#212529">Extract &quot;company&quot;, &quot;role&quot;, and &quot;years_experience_required&quot; from a job posting. Return a JSON object with exactly those three keys. Use an integer for years (take the minimum if a range is given), or null if no years are stated.
+
+Example 1:
+Job posting: &quot;TechCorp is hiring a Backend Engineer. We need someone with 3+ years of Python experience.&quot;
+Output: {&quot;company&quot;: &quot;TechCorp&quot;, &quot;role&quot;: &quot;Backend Engineer&quot;, &quot;years_experience_required&quot;: 3}
+
+Example 2:
+Job posting: &quot;DataWorks Ltd is looking for a Data Scientist. Fresh graduates are welcome — no experience required.&quot;
+Output: {&quot;company&quot;: &quot;DataWorks Ltd&quot;, &quot;role&quot;: &quot;Data Scientist&quot;, &quot;years_experience_required&quot;: 0}
+
+Example 3:
+Job posting: &quot;Omega Systems needs a Principal Architect. We hire on demonstrated impact and do not list a years requirement.&quot;
+Output: {&quot;company&quot;: &quot;Omega Systems&quot;, &quot;role&quot;: &quot;Principal Architect&quot;, &quot;years_experience_required&quot;: null}
+
+Now extract from this job posting:
+Acme Corp is hiring a Senior Software Engineer to join our platform team. The ideal candidate has 5+ years of backend development experience and strong skills in Python and distributed systems.
+Output:</pre></div>
+
+        <!-- 2c. Raw response -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Raw model response</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">{&quot;company&quot;: &quot;Acme Corp&quot;, &quot;role&quot;: &quot;Senior Software Engineer&quot;, &quot;years_experience_required&quot;: 5}</pre>
+        </div>
+
+        <!-- 2d. Parsed result -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Parsed result</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}</pre>
+        </div>
+
+      </div>
+    </div>
+    <!-- ── Card: structured ── -->
+    <div style="border:1px solid #dee2e6;border-radius:8px;margin-bottom:28px;overflow:hidden;">
+
+      <!-- Header bar: strategy badge + call metadata -->
+      <div style="background:#343a40;padding:10px 16px;display:flex;align-items:center;
+                  gap:14px;flex-wrap:wrap;">
+        <span style="background:#198754;color:#fff;padding:2px 10px;border-radius:12px;font-size:.8em;font-weight:700">structured</span>
+        <span style="color:#adb5bd;font-size:.8em;">
+          209 prompt tokens
+          &nbsp;+&nbsp; 30 completion tokens
+          &nbsp;|&nbsp; 1.43s
+        </span>
+      </div>
+
+      <div style="padding:14px 18px;">
+
+        <!-- 2b. Prompt bubbles -->
+        <p style="margin:0 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Prompt sent to model</p>
+        <div style="background:#fff3cd;border-radius:6px;padding:8px 12px;margin-bottom:6px;"><span style="font-size:.7em;font-weight:700;color:#856404;text-transform:uppercase;letter-spacing:.06em">SYSTEM</span><pre style="margin:4px 0 0;white-space:pre-wrap;font-size:.82em;font-family:Menlo,Consolas,monospace;color:#212529">You are an expert technical recruiter and data extraction specialist. Your job is to read job posting text and extract structured information with high precision.
+
+Always return a JSON object with exactly these three fields:
+  &quot;company&quot;                   (string)  — the name of the hiring company
+  &quot;role&quot;                       (string)  — the exact job title
+  &quot;years_experience_required&quot;  (integer or null) — minimum years required; use the lower bound if a range is given; use null if no requirement is stated
+
+Rules:
+- Output raw JSON only. No markdown fences, no explanation.
+- Never fabricate information not present in the posting.
+- If years are written as a word (e.g. &quot;three&quot;), convert to an integer (3).</pre></div><div style="background:#cfe2ff;border-radius:6px;padding:8px 12px;margin-bottom:6px;"><span style="font-size:.7em;font-weight:700;color:#084298;text-transform:uppercase;letter-spacing:.06em">USER</span><pre style="margin:4px 0 0;white-space:pre-wrap;font-size:.82em;font-family:Menlo,Consolas,monospace;color:#212529">Extract the structured fields from this job posting:
+
+Acme Corp is hiring a Senior Software Engineer to join our platform team. The ideal candidate has 5+ years of backend development experience and strong skills in Python and distributed systems.</pre></div>
+
+        <!-- 2c. Raw response -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Raw model response</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}</pre>
+        </div>
+
+        <!-- 2d. Parsed result -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Parsed result</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}</pre>
+        </div>
+
+      </div>
+    </div>
+    <!-- ── Card: cot ── -->
+    <div style="border:1px solid #dee2e6;border-radius:8px;margin-bottom:28px;overflow:hidden;">
+
+      <!-- Header bar: strategy badge + call metadata -->
+      <div style="background:#343a40;padding:10px 16px;display:flex;align-items:center;
+                  gap:14px;flex-wrap:wrap;">
+        <span style="background:#fd7e14;color:#fff;padding:2px 10px;border-radius:12px;font-size:.8em;font-weight:700">cot</span>
+        <span style="color:#adb5bd;font-size:.8em;">
+          190 prompt tokens
+          &nbsp;+&nbsp; 179 completion tokens
+          &nbsp;|&nbsp; 2.25s
+        </span>
+      </div>
+
+      <div style="padding:14px 18px;">
+
+        <!-- 2b. Prompt bubbles -->
+        <p style="margin:0 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Prompt sent to model</p>
+        <div style="background:#cfe2ff;border-radius:6px;padding:8px 12px;margin-bottom:6px;"><span style="font-size:.7em;font-weight:700;color:#084298;text-transform:uppercase;letter-spacing:.06em">USER</span><pre style="margin:4px 0 0;white-space:pre-wrap;font-size:.82em;font-family:Menlo,Consolas,monospace;color:#212529">Read the following job posting carefully and extract three fields.
+
+Job posting:
+Acme Corp is hiring a Senior Software Engineer to join our platform team. The ideal candidate has 5+ years of backend development experience and strong skills in Python and distributed systems.
+
+Think step by step:
+1. Identify the company name.
+2. Identify the job title/role.
+3. Find any mention of required years of experience.
+   - If a range is given (e.g. &quot;3–5 years&quot;), use the minimum (3).
+   - If years are spelled as a word (e.g. &quot;three&quot;), convert to integer (3).
+   - If no years requirement is stated at all, use null.
+4. Output a JSON object with exactly these keys:
+   {&quot;company&quot;: ..., &quot;role&quot;: ..., &quot;years_experience_required&quot;: ...}
+
+Show your reasoning for each field, then end with the JSON object.</pre></div>
+
+        <!-- 2c. Raw response -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Raw model response</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">Let's analyze the job posting step by step:
+
+1. **Identify the company name**: The job posting starts with &quot;Acme Corp is hiring...&quot;, which indicates that the company name is &quot;Acme Corp&quot;.
+
+2. **Identify the job title/role**: The posting states &quot;a Senior Software Engineer to join our platform team.&quot; Therefore, the job title/role is &quot;Senior Software Engineer&quot;.
+
+3. **Find any mention of required years of experience**: The posting mentions &quot;The ideal candidate has 5+ years of backend development experience&quot;. Here, the requirement is for &quot;5+&quot; years, which means the minimum required years of experience is 5.
+
+Now, we can compile this information into a JSON object:
+
+```json
+{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}
+```</pre>
+        </div>
+
+        <!-- 2d. Parsed result -->
+        <p style="margin:14px 0 6px;font-size:.75em;font-weight:700;color:#6c757d;
+           text-transform:uppercase;letter-spacing:.06em">Parsed result</p>
+        <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;">
+          <pre style="margin:0;white-space:pre-wrap;font-size:.82em;
+               font-family:Menlo,Consolas,monospace">{
+  &quot;company&quot;: &quot;Acme Corp&quot;,
+  &quot;role&quot;: &quot;Senior Software Engineer&quot;,
+  &quot;years_experience_required&quot;: 5
+}</pre>
+        </div>
+
+      </div>
+    </div>
+
+</body>
+</html>
